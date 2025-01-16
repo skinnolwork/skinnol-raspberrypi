@@ -67,6 +67,92 @@ app.get('/api/cosmetics', (req, res) => {
   });
 });
 
+app.get('/api/analyses', (req, res) => {
+  const analysisDir = path.join(__dirname, '..', 'public', 'analysis');
+  fs.readdir(analysisDir, (err, files) => {
+    if (err) {
+      return res.status(500).json({ error: 'Unable to scan directory' });
+    }
+    const analyses = files.filter(file => path.extname(file).toLowerCase() === '.json');
+    res.json(analyses);
+  });
+});
+
+app.post('/api/individual-analysis', (req, res) => {
+  const { imageId, cosmeticId } = req.body;
+
+  const imagePath = path.join(__dirname, '..', 'public', 'images', `${imageId}.json`);
+  const cosmeticPath = path.join(__dirname, '..', 'public', 'cosmetics', `${cosmeticId}.json`);
+
+  try {
+    const imageData = JSON.parse(fs.readFileSync(imagePath, 'utf8'));
+    const cosmeticData = JSON.parse(fs.readFileSync(cosmeticPath, 'utf8'));
+
+    const imageSpectrum = imageData.spectrum;
+    const cosmeticSpectrum = cosmeticData.spectrum;
+
+    // 스펙트럼 길이가 다를 경우 처리
+    const minLength = Math.min(imageSpectrum.length, cosmeticSpectrum.length);
+    const truncatedImageSpectrum = imageSpectrum.slice(0, minLength);
+    const truncatedCosmeticSpectrum = cosmeticSpectrum.slice(0, minLength);
+
+    const difference = truncatedImageSpectrum.map((value, index) => value - truncatedCosmeticSpectrum[index]);
+    const correlation = calculateCorrelation(truncatedImageSpectrum, truncatedCosmeticSpectrum);
+
+    const analysisResult = {
+      imageId,
+      cosmeticId,
+      difference,
+      correlation
+    };
+
+    res.json(analysisResult);
+  } catch (error) {
+    console.error('분석 중 오류 발생:', error);
+    res.status(500).json({ error: '분석 중 오류가 발생했습니다.' });
+  }
+});
+
+function calculateCorrelation(x, y) {
+  const n = x.length;
+  let sum_x = 0, sum_y = 0, sum_xy = 0, sum_x2 = 0, sum_y2 = 0;
+
+  for (let i = 0; i < n; i++) {
+    sum_x += x[i];
+    sum_y += y[i];
+    sum_xy += x[i] * y[i];
+    sum_x2 += x[i] * x[i];
+    sum_y2 += y[i] * y[i];
+  }
+
+  const numerator = n * sum_xy - sum_x * sum_y;
+  const denominator = Math.sqrt((n * sum_x2 - sum_x * sum_x) * (n * sum_y2 - sum_y * sum_y));
+
+  if (denominator === 0) return 0; // 분모가 0인 경우 상관계수를 0으로 처리
+
+  return numerator / denominator;
+}
+
+
+app.post('/api/save-analysis', (req, res) => {
+  const { imageId, cosmeticId, analysisResult } = req.body;
+
+  try {
+    const analysisDir = path.join(__dirname, '..', 'public', 'analysis');
+    if (!fs.existsSync(analysisDir)) {
+      fs.mkdirSync(analysisDir);
+    }
+
+    const analysisFilePath = path.join(analysisDir, `${imageId}_${cosmeticId}.json`);
+    fs.writeFileSync(analysisFilePath, JSON.stringify(analysisResult, null, 2));
+
+    res.json({ message: '분석 결과가 성공적으로 저장되었습니다.' });
+  } catch (error) {
+    res.status(500).json({ error: '분석 결과 저장 중 오류가 발생했습니다.' });
+  }
+});
+
+
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });

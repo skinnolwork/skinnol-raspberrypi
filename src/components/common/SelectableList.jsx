@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
-import Text from '../Text';
-import Button from '../Button';
+import Text from './Text';
+import Button from './Button';
 
 const List = styled.ul`
   list-style-type: none;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import Button from '../Button';
+import Button from '../common/Button';
 import SelectableList from '../common/SelectableList';
 import TabLayout from '../TapLayout';
 

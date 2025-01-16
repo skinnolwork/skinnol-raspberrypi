@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { ArrowLeft } from 'react-feather';
-import Button from './Button';
+import Button from './common/Button';
 import { Line } from 'react-chartjs-2';
 
 const Container = styled.div`
@@ -32,26 +32,37 @@ const Title = styled.h2`
 
 const Content = styled.div`
   flex: 1;
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
   padding: 1rem;
 `;
 
 const ImageContainer = styled.div`
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
   margin-bottom: 2rem;
 `;
 
 const Image = styled.img`
-  width: 45%;
-  height: auto;
+  max-height: 30vh;
+  object-fit: contain;
 `;
 
-const Graph = styled.div`
-  width: 100%;
-  height: 200px;
-  background-color: #ddd;
+const GraphContainer = styled.div`
+  display: flex;
+  justify-content: space-between;
   margin-bottom: 1rem;
+`;
+
+const GraphWrapper = styled.div`
+  width: 48%;
+  height: 300px;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  padding: 10px;
+  display: flex;
+  justify-content: center;
 `;
 
 const ButtonContainer = styled.div`
@@ -62,6 +73,7 @@ const DetailPageLayout = ({ title, image, additionalGraph, buttonText, onButtonC
   const navigate = useNavigate();
   const [selectedRow, setSelectedRow] = useState(null);
   const [spectrumData, setSpectrumData] = useState(null);
+  const [comparisonData, setComparisonData] = useState(null);
   const canvasRef = useRef(null);
   const imageRef = useRef(null);
 
@@ -86,8 +98,8 @@ const DetailPageLayout = ({ title, image, additionalGraph, buttonText, onButtonC
     const rect = imageRef.current.getBoundingClientRect();
     canvasRef.current.style.top = `${imageRef.current.offsetTop}px`;
     canvasRef.current.style.left = `${imageRef.current.offsetLeft}px`;
-    canvasRef.current.width = imageRef.current.width;
-    canvasRef.current.height = imageRef.current.height;
+    canvasRef.current.width = rect.width;
+    canvasRef.current.height = rect.height;
   };
 
   const handleImageClick = (event) => {
@@ -150,8 +162,28 @@ const DetailPageLayout = ({ title, image, additionalGraph, buttonText, onButtonC
     },
   };
 
+  const emptyChartData = {
+    labels: [],
+    datasets: [{
+      label: '데이터 없음',
+      data: [],
+      borderColor: 'rgb(200, 200, 200)',
+    }]
+  };
+
+  const emptyChartOptions = {
+    ...chartOptions,
+    plugins: {
+      ...chartOptions.plugins,
+      title: {
+        ...chartOptions.plugins.title,
+        text: '열을 선택하세요',
+      },
+    },
+  };
+
   const handleButtonClick = () => {
-    onButtonClick(selectedRow, spectrumData);
+    onButtonClick(spectrumData);
   };
 
   return (
@@ -166,16 +198,21 @@ const DetailPageLayout = ({ title, image, additionalGraph, buttonText, onButtonC
         <ImageContainer>
           <Image src={`/images/${image.name}`} alt="Selected Image" />
         </ImageContainer>
-        {spectrumData && (
-          <div>
-            <h3>선택된 Row: {selectedRow}</h3>
-            <Line data={chartData} options={chartOptions} />
-          </div>
-        )}
-        {showComparisonGraph && additionalGraph && additionalGraph()}
+        <GraphContainer style={{ justifyContent: showComparisonGraph ? 'space-between' : 'center' }}>
+          <GraphWrapper>
+            <Line data={spectrumData ? chartData : emptyChartData} options={spectrumData ? chartOptions : emptyChartOptions} />
+          </GraphWrapper>
+          {showComparisonGraph && (
+            <GraphWrapper>
+              {additionalGraph ? additionalGraph() : 
+                <Line data={emptyChartData} options={{...emptyChartOptions, plugins: {...emptyChartOptions.plugins, title: {...emptyChartOptions.plugins.title, text: '비교 데이터'}}}} />
+              }
+            </GraphWrapper>
+          )}
+        </GraphContainer>
       </Content>
       <ButtonContainer>
-      <Button onClick={handleButtonClick} disabled={!selectedRow || !spectrumData}>
+        <Button onClick={handleButtonClick} disabled={!selectedRow || !spectrumData}>
           {buttonText}
         </Button>
       </ButtonContainer>

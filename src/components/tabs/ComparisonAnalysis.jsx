@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Text from '../Text';
-import Button from '../Button';
+import Text from '../common/Text';
+import Button from '../common/Button';
 import SelectableList from '../common/SelectableList';
 import TabLayout from '../TapLayout';
 
@@ -11,16 +11,16 @@ const ComparisonAnalysis = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-      fetch('http://localhost:5000/api/images')
+      fetch('http://localhost:5000/api/analyses')
         .then(response => response.json())
-        .then(images => {
-          const results = images.map((image, index) => ({
+        .then(analyses => {
+          const results = analyses.map((analysis, index) => ({
             id: index + 1,
-            name: image
+            name: analysis
           }));
           setAnalysisResults(results);
         })
-        .catch(error => console.error('Error fetching images:', error));
+        .catch(error => console.error('Error fetching analyses:', error));
     }, []);
   
     const toggleAnalysis = (analysis) => {
