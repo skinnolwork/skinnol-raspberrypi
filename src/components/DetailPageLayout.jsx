@@ -69,7 +69,7 @@ const ButtonContainer = styled.div`
   padding: 1rem;
 `;
 
-const DetailPageLayout = ({ title, image, additionalGraph, buttonText, onButtonClick, showComparisonGraph = false }) => {
+const DetailPageLayout = ({ title, image, additionalGraph, buttonText, onButtonClick, showComparisonGraph = false, onSpectrumDataUpdate }) => {
   const navigate = useNavigate();
   const [selectedRow, setSelectedRow] = useState(null);
   const [spectrumData, setSpectrumData] = useState(null);
@@ -135,6 +135,10 @@ const DetailPageLayout = ({ title, image, additionalGraph, buttonText, onButtonC
       newSpectrumData.push(imageData[i]);
     }
     setSpectrumData(newSpectrumData);
+
+    if (onSpectrumDataUpdate) {
+      onSpectrumDataUpdate(newSpectrumData);
+    }
   };
 
   const chartData = {
@@ -183,7 +187,7 @@ const DetailPageLayout = ({ title, image, additionalGraph, buttonText, onButtonC
   };
 
   const handleButtonClick = () => {
-    onButtonClick(spectrumData);
+    onButtonClick(selectedRow, spectrumData);
   };
 
   return (

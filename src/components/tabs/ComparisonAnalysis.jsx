@@ -14,9 +14,9 @@ const ComparisonAnalysis = () => {
       fetch('http://localhost:5000/api/analyses')
         .then(response => response.json())
         .then(analyses => {
-          const results = analyses.map((analysis, index) => ({
-            id: index + 1,
-            name: analysis
+          const results = analyses.map(analysis => ({
+            id: analysis.id,
+            name: analysis.name
           }));
           setAnalysisResults(results);
         })

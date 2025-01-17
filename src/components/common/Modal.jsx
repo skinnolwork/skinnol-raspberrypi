@@ -44,7 +44,7 @@ const Button = styled.button`
   cursor: pointer;
 `;
 
-const Modal = ({ isOpen, onClose, onConfirm, children }) => {
+const Modal = ({ isOpen, onClose, onConfirm, children, singleButton = false }) => {
   if (!isOpen) return null;
 
   return (
@@ -52,8 +52,8 @@ const Modal = ({ isOpen, onClose, onConfirm, children }) => {
       <ModalContent onClick={e => e.stopPropagation()}>
         <ModalText>{children}</ModalText>
         <ButtonContainer>
-          <Button onClick={onClose}>취소</Button>
-          <Button onClick={onConfirm}>확인</Button>
+          {!singleButton && <Button onClick={onClose}>취소</Button>}
+          <Button onClick={singleButton? onClose : onConfirm}>확인</Button>
         </ButtonContainer>
       </ModalContent>
     </ModalBackground>

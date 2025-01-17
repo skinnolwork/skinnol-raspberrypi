@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import DetailPageLayout from './DetailPageLayout';
 import Modal from './common/Modal';
 import styled from 'styled-components';
@@ -25,8 +25,10 @@ const Input = styled.input`
 const CosmeticDataAdd = () => {
   const { imageId } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const { selectedImage } = location.state || {};
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [cosmeticName, setCosmeticName] = useState('');
   const [selectedRow, setSelectedRow] = useState(null);
   const [spectrumData, setSpectrumData] = useState(null);
@@ -60,12 +62,18 @@ const CosmeticDataAdd = () => {
     .then(data => {
       console.log(data.message);
       setIsModalOpen(false);
+      setIsConfirmModalOpen(true);
     })
     .catch((error) => {
       console.error('Error:', error);
     });
-    
-    setCosmeticName(''); // 입력 필드 초기화
+  }
+
+  const handleConfirmModalClose = () => {
+    setIsConfirmModalOpen(false);
+    setSpectrumData(null);
+    setCosmeticName('');
+    navigate(-1);
   }
 
   return (
@@ -91,6 +99,14 @@ const CosmeticDataAdd = () => {
           />
         </ModalContent>
       </Modal>
+
+      <Modal
+  isOpen={isConfirmModalOpen}
+  onClose={handleConfirmModalClose}
+  singleButton={true}
+>
+  화장품이 성공적으로 등록되었습니다.
+</Modal>
     </>
   );
 };

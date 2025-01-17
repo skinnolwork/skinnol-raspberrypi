@@ -73,8 +73,34 @@ app.get('/api/analyses', (req, res) => {
     if (err) {
       return res.status(500).json({ error: 'Unable to scan directory' });
     }
-    const analyses = files.filter(file => path.extname(file).toLowerCase() === '.json');
+    const analyseFiles = files.filter(file => path.extname(file).toLowerCase() === '.json');
+
+    const analyses = analyseFiles.map(file => {
+      const filePath = path.join(analysisDir, file);
+      const rawData = fs.readFileSync(filePath);
+      return JSON.parse(rawData);
+    })
     res.json(analyses);
+  });
+});
+
+app.get('/api/analysis/:id', (req, res) => {
+  const analysisId = req.params.id;
+  const analysisDir = path.join(__dirname, '..', 'public', 'analysis');
+  const analysisFilePath = path.join(analysisDir, `${analysisId}.json`);
+  fs.readFile(analysisFilePath, 'utf8', (err, data) => {
+    if (err) {
+      console.error('분석 데이터 읽기 오류:', err);
+      return res.status(500).json({ error: '분석 데이터를 읽는 중 오류가 발생했습니다.' });
+    }
+
+    try {
+      const analysisData = JSON.parse(data);
+      res.json({ spectrumData: analysisData.spectrumData });
+    } catch (parseError) {
+      console.error('JSON 파싱 오류:', parseError);
+      res.status(500).json({ error: 'JSON 파싱 중 오류가 발생했습니다.' });
+    }
   });
 });
 
