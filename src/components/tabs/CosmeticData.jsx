@@ -10,7 +10,7 @@ const CosmeticData = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/images')
+    fetch('http://192.168.4.1:5000/api/images')
       .then(response => response.json())
       .then(imageList => {
         const formattedImages = imageList.map((image, index) => ({

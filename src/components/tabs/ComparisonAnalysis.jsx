@@ -11,7 +11,7 @@ const ComparisonAnalysis = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-      fetch('http://localhost:5000/api/analyses')
+      fetch('http://192.168.4.1:5000/api/analyses')
         .then(response => response.json())
         .then(analyses => {
           const results = analyses.map(analysis => ({

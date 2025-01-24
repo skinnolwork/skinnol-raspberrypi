@@ -47,7 +47,7 @@ const CosmeticDataAdd = () => {
     const cosmeticId = Date.now(); // 간단한 ID 생성 (현재 시간)
     
     // 화장품 데이터 저장 요청
-    fetch('http://localhost:5000/api/cosmetics', {
+    fetch('http://192.168.4.1:5000/api/cosmetics', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
