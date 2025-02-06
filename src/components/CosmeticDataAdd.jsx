@@ -44,7 +44,7 @@ const CosmeticDataAdd = () => {
 
   const handleConfirm = async () => {
     try {
-      await axios.post('http://192.168.12.150:5000/cosmetics', {
+      await axios.post('http://localhost:5000/cosmetics', {
         name: cosmeticName,
         spectrum: spectrumData
       });

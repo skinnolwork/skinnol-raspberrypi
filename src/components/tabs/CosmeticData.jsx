@@ -14,7 +14,7 @@ const CosmeticData = () => {
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const response = await axios.get('http://192.168.12.150:5000/images');
+        const response = await axios.get('http://localhost:5000/images');
         const fetchedImages = response.data.map((name) => ({
           id: uuidv4(),
           name: name,

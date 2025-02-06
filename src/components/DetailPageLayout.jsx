@@ -83,7 +83,7 @@ const DetailPageLayout = ({ title1, title2, additionalGraph, buttonText, onButto
   useEffect(() => {
     const img = async () => {
       try {
-        const response = await axios.get(`http://192.168.12.150:5000/images/${title1_Extension}`, {
+        const response = await axios.get(`http://localhost:5000/images/${title1_Extension}`, {
           responseType: 'blob'
         });
 
@@ -99,7 +99,7 @@ const DetailPageLayout = ({ title1, title2, additionalGraph, buttonText, onButto
 
     const fetchCosmeticsData = async () => {
       try {
-        const response = await axios.get(`http://192.168.12.150:5000/cosmetics/${title2_Extension}`); // JSON 파일 가져오기
+        const response = await axios.get(`http://localhost:5000/cosmetics/${title2_Extension}`); // JSON 파일 가져오기
         setCosmeticsData(response.data); // 데이터 저장
       } catch (error) {
         console.error("title2 데이터를 불러오지 못했습니다.", error);
@@ -117,7 +117,7 @@ const DetailPageLayout = ({ title1, title2, additionalGraph, buttonText, onButto
     setSelectedRow(row);
 
     try {
-      const response = await axios.post('http://192.168.12.150:5000/images/row-data', {
+      const response = await axios.post('http://localhost:5000/images/row-data', {
         filename: title1_Extension,
         row: row,
       });
