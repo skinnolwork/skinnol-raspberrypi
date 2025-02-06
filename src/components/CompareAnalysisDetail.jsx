@@ -103,7 +103,7 @@ const ComparisonAnalysisDetail = () => {
   //   const fetchSpectrumData = async () => {
   //     const data = await Promise.all(
   //       itemsWithColors.map(async (item) => {
-  //         const response = await fetch(`http://192.168.12.150:5000/api/analysis/${item.id}`);
+  //         const response = await fetch(`http://192.168.4.1:5000/api/analysis/${item.id}`);
   //         const result = await response.json();
   //         return {
   //           ...item,
