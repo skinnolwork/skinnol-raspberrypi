@@ -10,18 +10,18 @@ const ComparisonAnalysis = () => {
     const [selectedAnalyses, setSelectedAnalyses] = useState([]);
     const navigate = useNavigate();
 
-    useEffect(() => {
-      fetch('http://localhost:5000/api/analyses')
-        .then(response => response.json())
-        .then(analyses => {
-          const results = analyses.map(analysis => ({
-            id: analysis.id,
-            name: analysis.name
-          }));
-          setAnalysisResults(results);
-        })
-        .catch(error => console.error('Error fetching analyses:', error));
-    }, []);
+    // useEffect(() => {
+    //   fetch('http://192.168.12.150:5000/api/analyses')
+    //     .then(response => response.json())
+    //     .then(analyses => {
+    //       const results = analyses.map(analysis => ({
+    //         id: analysis.id,
+    //         name: analysis.name
+    //       }));
+    //       setAnalysisResults(results);
+    //     })
+    //     .catch(error => console.error('Error fetching analyses:', error));
+    // }, []);
   
     const toggleAnalysis = (analysis) => {
       setSelectedAnalyses(prev => {

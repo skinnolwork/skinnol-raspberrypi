@@ -98,24 +98,24 @@ const ComparisonAnalysisDetail = () => {
     }));
   }, [selectedItems]);
 
-  useEffect(() => {
-    // 각 아이템의 스펙트럼 데이터를 가져오는 함수
-    const fetchSpectrumData = async () => {
-      const data = await Promise.all(
-        itemsWithColors.map(async (item) => {
-          const response = await fetch(`http://localhost:5000/api/analysis/${item.id}`);
-          const result = await response.json();
-          return {
-            ...item,
-            spectrum: result.spectrumData || []
-          };
-        })
-      );
-      setSpectrumData(data);
-    };
+  // useEffect(() => {
+  //   // 각 아이템의 스펙트럼 데이터를 가져오는 함수
+  //   const fetchSpectrumData = async () => {
+  //     const data = await Promise.all(
+  //       itemsWithColors.map(async (item) => {
+  //         const response = await fetch(`http://192.168.12.150:5000/api/analysis/${item.id}`);
+  //         const result = await response.json();
+  //         return {
+  //           ...item,
+  //           spectrum: result.spectrumData || []
+  //         };
+  //       })
+  //     );
+  //     setSpectrumData(data);
+  //   };
 
-    fetchSpectrumData();
-  }, [itemsWithColors]);
+  //   fetchSpectrumData();
+  // }, [itemsWithColors]);
 
   const chartData = {
     labels: spectrumData[0]?.spectrum.map((_, index) => index) || [],
