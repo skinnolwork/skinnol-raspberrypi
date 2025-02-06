@@ -245,7 +245,7 @@ const DetailPageLayout = ({ title1, title2, additionalGraph, buttonText, onButto
           </GraphWrapper>
           {cosmeticsData && Array.isArray(cosmeticsData) && cosmeticsData.length > 0 && (
             <GraphWrapper style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-              <Line data={differenceChartData} options={{ ...chartOptions, indexAxis: 'y', title: { text: '차이 (cosmeticsData - spectrumData)' } }} />
+              <Line data={differenceChartData ? emptyChartData : emptyChartData} options={{ ...chartOptions, indexAxis: 'y', title: { text: '차이 (cosmeticsData - spectrumData)' } }} />
             </GraphWrapper>
           )}
         </GraphContainer>
