@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import Text from './Text';
 import Button from './Button';
+import Modal from './Modal';
+
 
 const List = styled.ul`
   list-style-type: none;
@@ -30,6 +32,7 @@ const ItemContent = styled.div`
   display: flex;
   align-items: center;
   flex-grow: 1;
+  margin-right: ${props => (props.hasDeleteButton ? '10px' : '0')};
 `;
 
 const DeleteButton = styled(Button)`
@@ -45,23 +48,49 @@ const DeleteButton = styled(Button)`
 `;
 
 const SelectableList = ({ items, selectedItems, onItemClick, showDeleteButton, onDelete }) => {
-    return (
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [targetToDelete, setTargetToDelete] = useState(null);
+
+  const handleDeleteClick = (name) => {
+    setTargetToDelete(name);
+    setIsModalOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    onDelete(targetToDelete);
+    setIsModalOpen(false);
+    setTargetToDelete(null);
+  };
+
+  return (
+    <>
       <List>
         {items.map(item => (
-          <ListItem key={item.id}>
+          <ListItem key={item.name}>
             <ItemContent onClick={() => onItemClick(item)}>
-              <Bullet selected={selectedItems.some(selectedItem => selectedItem.id === item.id)} />
+              <Bullet selected={selectedItems.some(selectedItem => selectedItem.name === item.name)} />
               <Text>{item.name}</Text>
             </ItemContent>
             {showDeleteButton && (
-            <DeleteButton onClick={() => onDelete(item.id)}>
-            삭제
-          </DeleteButton>
+              <DeleteButton onClick={() => {
+                handleDeleteClick(item.name)
+              }}>
+                삭제
+              </DeleteButton>
             )}
           </ListItem>
         ))}
       </List>
-    );
-  };
-  
-  export default SelectableList;
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+      >
+        정말 삭제하시겠습니까?
+      </Modal>
+    </>
+  );
+};
+
+export default SelectableList;

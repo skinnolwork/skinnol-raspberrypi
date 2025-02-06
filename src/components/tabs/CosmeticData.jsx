@@ -3,32 +3,38 @@ import { useNavigate } from 'react-router-dom';
 import Button from '../common/Button';
 import SelectableList from '../common/SelectableList';
 import TabLayout from '../TapLayout';
+import { v4 as uuidv4 } from 'uuid';
+import axios from 'axios';
 
 const CosmeticData = () => {
-  const [images, setImages] = useState([]);
+  const [items, setItems] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch('http://192.168.4.1:5000/api/images')
-      .then(response => response.json())
-      .then(imageList => {
-        const formattedImages = imageList.map((image, index) => ({
-          id: index + 1,
-          name: image
+    const fetchImages = async () => {
+      try {
+        const response = await axios.get('http://192.168.12.40:5000/images');
+        const fetchedImages = response.data.map((name) => ({
+          id: uuidv4(),
+          name: name,
         }));
-        setImages(formattedImages);
-      })
-      .catch(error => console.error('Error fetching images:', error));
+        setItems(fetchedImages);
+      } catch (error) {
+        console.log("이미지를 불러올 수 없습니다.");
+      }
+    };
+    fetchImages();
   }, []);
 
-  const handleImageSelect = (img) => {
-    setSelectedImage(img.id === selectedImage?.id ? null : img);
+  const handleImageSelect = (items) => {
+    setSelectedImage(items.id === selectedImage?.id ? null : items);
   };
 
   const handleAddCosmetic = () => {
     if (selectedImage) {
-      navigate(`/cosmetic-data-add/${selectedImage.id}`, {
+      console.log(selectedImage.name)
+      navigate(`/cosmetic-data-add/${selectedImage.name}`, {
         state: {selectedImage}
       });
     }
@@ -46,7 +52,7 @@ const CosmeticData = () => {
   return (
     <TabLayout button={registerButton}>
       <SelectableList 
-        items={images}
+        items={items.map(item => ({ ...item, name: item.name.split('.').slice(0, -1).join('.') }))}
         selectedItems={selectedImage ? [selectedImage] : []}
         onItemClick={handleImageSelect}
       />

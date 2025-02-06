@@ -53,7 +53,7 @@ const IndividualAnalysisDetail = () => {
   const handleSaveAnalysis = () => {
     if (!analysisResult) return;
 
-    fetch('http://192.168.4.1:5000/api/save-analysis', {
+    fetch('http://192.168.12.40:5000/api/save-analysis', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -140,7 +140,8 @@ const IndividualAnalysisDetail = () => {
   return (
     <>
     <DetailPageLayout
-      title={`${selectedImage.name} - ${selectedCosmetic.name}`}
+      title1={`${selectedImage.name}`}
+      title2={`${selectedCosmetic.name}`}
       image={selectedImage}
       additionalGraph={comparisonGraph}
       buttonText="분석 저장하기"

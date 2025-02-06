@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { ArrowLeft } from 'react-feather';
 import Button from './common/Button';
 import { Line } from 'react-chartjs-2';
+import axios from 'axios';
 
 const Container = styled.div`
   display: flex;
@@ -69,97 +70,129 @@ const ButtonContainer = styled.div`
   padding: 1rem;
 `;
 
-const DetailPageLayout = ({ title, image, additionalGraph, buttonText, onButtonClick, showComparisonGraph = false, onSpectrumDataUpdate }) => {
+const DetailPageLayout = ({ title1, title2, additionalGraph, buttonText, onButtonClick, showComparisonGraph = false, onSpectrumDataUpdate }) => {
   const navigate = useNavigate();
+  const [image, setImage] = useState(null);
   const [selectedRow, setSelectedRow] = useState(null);
   const [spectrumData, setSpectrumData] = useState(null);
-  const [comparisonData, setComparisonData] = useState(null);
-  const canvasRef = useRef(null);
+  const [cosmeticsData, setCosmeticsData] = useState(null);
   const imageRef = useRef(null);
+  const title1_Extension = title1 + '.png';
+  const title2_Extension = title2 + '.json';
 
   useEffect(() => {
-    const img = document.querySelector('img[alt="Selected Image"]');
-    if (img) {
-      imageRef.current = img;
-      img.addEventListener('click', handleImageClick);
-      setupCanvas();
-      return () => img.removeEventListener('click', handleImageClick);
-    }
+    const img = async () => {
+      try {
+        const response = await axios.get(`http://192.168.12.40:5000/images/${title1_Extension}`, {
+          responseType: 'blob'
+        });
+
+        const imageUrl = URL.createObjectURL(response.data);
+        setImage(imageUrl);
+      } catch (error) {
+        console.error("이미지를 불러오지 못했습니다.", error);
+      }
+    };
+    img();
+
+    if (!title2) return; // title2가 없으면 실행 안 함
+
+    const fetchCosmeticsData = async () => {
+      try {
+        const response = await axios.get(`http://192.168.12.40:5000/cosmetics/${title2_Extension}`); // JSON 파일 가져오기
+        setCosmeticsData(response.data); // 데이터 저장
+      } catch (error) {
+        console.error("title2 데이터를 불러오지 못했습니다.", error);
+      }
+    };
+
+    fetchCosmeticsData();
   }, []);
 
-  const setupCanvas = () => {
-    if (!canvasRef.current) {
-      canvasRef.current = document.createElement('canvas');
-      canvasRef.current.style.position = 'absolute';
-      canvasRef.current.style.pointerEvents = 'none';
-      imageRef.current.parentNode.style.position = 'relative';
-      imageRef.current.parentNode.appendChild(canvasRef.current);
-    }
+  const handleImageClick = async (event) => {
+    if (!imageRef.current) return;
     const rect = imageRef.current.getBoundingClientRect();
-    canvasRef.current.style.top = `${imageRef.current.offsetTop}px`;
-    canvasRef.current.style.left = `${imageRef.current.offsetLeft}px`;
-    canvasRef.current.width = rect.width;
-    canvasRef.current.height = rect.height;
-  };
+    const row = Math.floor((event.clientY - rect.top) * (2160 / rect.height));
 
-  const handleImageClick = (event) => {
-    setupCanvas();
-    const img = imageRef.current;
-    const rect = img.getBoundingClientRect();
-    const scaleY = img.naturalHeight / img.height;
-    
-    const y = (event.clientY - rect.top) * scaleY;
-    const row = Math.floor(y);
     setSelectedRow(row);
 
-    const ctx = canvasRef.current.getContext('2d');
-    ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-    ctx.beginPath();
-    ctx.strokeStyle = 'green';
-    ctx.lineWidth = 2;
-    
-    const lineY = y / scaleY;
-    ctx.moveTo(0, lineY);
-    ctx.lineTo(canvasRef.current.width, lineY);
-    ctx.stroke();
+    try {
+      const response = await axios.post('http://localhost:5000/images/row-data', {
+        filename: title1_Extension,
+        row: row,
+      });
 
-    // 스펙트럼 데이터 추출 로직
-    const offscreenCanvas = document.createElement('canvas');
-    offscreenCanvas.width = img.naturalWidth;
-    offscreenCanvas.height = img.naturalHeight;
-    const offscreenCtx = offscreenCanvas.getContext('2d');
-    offscreenCtx.drawImage(img, 0, 0, img.naturalWidth, img.naturalHeight);
-    const imageData = offscreenCtx.getImageData(0, row, img.naturalWidth, 1).data;
-    const newSpectrumData = [];
-    for (let i = 0; i < imageData.length; i += 4) {
-      newSpectrumData.push(imageData[i]);
-    }
-    setSpectrumData(newSpectrumData);
-
-    if (onSpectrumDataUpdate) {
-      onSpectrumDataUpdate(newSpectrumData);
+      setSpectrumData(response.data.row_data);
+    } catch (error) {
+      console.error("Row 데이터를 불러오지 못했습니다.", error);
     }
   };
 
+  let differenceData = [];
+
+  if (spectrumData && cosmeticsData) {
+    differenceData = cosmeticsData.map((value, index) => {
+      if (spectrumData[index] !== undefined) {
+        const diff = value - spectrumData[index];
+        return diff < 0 ? 0 : diff; // 음수는 0으로 처리
+      }
+      return 0; // 데이터가 없을 경우 0으로 처리
+    });
+  }
+
+
+  const reversedLabels = spectrumData
+  ? Array.from({ length: spectrumData.length }, (_, i) => spectrumData.length - 1 - i)
+  : [];
+
   const chartData = {
-    labels: spectrumData ? Array.from({ length: spectrumData.length }, (_, i) => i) : [],
+    labels: reversedLabels,
     datasets: [
       {
         label: '스펙트럼 데이터',
         data: spectrumData || [],
         borderColor: 'rgb(75, 192, 192)',
-        tension: 0.1
+        borderWidth: 2,
+        tension: 0.04,
+        pointRadius: 0,
+      },
+      ...(cosmeticsData
+        ? [
+          {
+            label: `${title2.replace('.json', '')} 비교 데이터`,
+            data: cosmeticsData || [],
+            borderColor: 'rgb(255, 99, 132)',
+            borderWidth: 2,
+            tension: 0.04,
+            pointRadius: 0,
+          },
+        ]
+        : []),
+    ],
+  };
+  const differenceChartData = {
+    labels: reversedLabels,
+    datasets: [
+      {
+        label: '차이 (cosmeticsData - spectrumData)',
+        data: differenceData || [],
+        borderColor: 'rgb(255, 165, 0)', // 주황색
+        borderWidth: 2,
+        tension: 0.04,
+        pointRadius: 0,
       }
     ]
   };
 
+
   const chartOptions = {
     responsive: true,
+    animation: true,
     plugins: {
       legend: {
-        position: 'top',
+        display: false,
       },
-      title: {
+      title1: {
         display: true,
         text: '선택된 Row의 스펙트럼 데이터',
       },
@@ -179,15 +212,15 @@ const DetailPageLayout = ({ title, image, additionalGraph, buttonText, onButtonC
     ...chartOptions,
     plugins: {
       ...chartOptions.plugins,
-      title: {
-        ...chartOptions.plugins.title,
+      title1: {
+        ...chartOptions.plugins.title1,
         text: '열을 선택하세요',
       },
     },
   };
 
   const handleButtonClick = () => {
-    onButtonClick(selectedRow, spectrumData);
+    onButtonClick(spectrumData);
   };
 
   return (
@@ -196,21 +229,23 @@ const DetailPageLayout = ({ title, image, additionalGraph, buttonText, onButtonC
         <BackButton onClick={() => navigate(-1)}>
           <ArrowLeft />
         </BackButton>
-        <Title>{title}</Title>
+        <Title>{title1} {title2 ? ` - ${title2}` : ''}</Title>
       </Header>
       <Content>
         <ImageContainer>
-          <Image src={`/images/${image.name}`} alt="Selected Image" />
+          {image ? (
+            <Image ref={imageRef} src={image} alt="Selected Image" onClick={handleImageClick} />
+          ) : (
+            <p>이미지를 불러오는 중...</p>
+          )}
         </ImageContainer>
         <GraphContainer style={{ justifyContent: showComparisonGraph ? 'space-between' : 'center' }}>
           <GraphWrapper>
             <Line data={spectrumData ? chartData : emptyChartData} options={spectrumData ? chartOptions : emptyChartOptions} />
           </GraphWrapper>
-          {showComparisonGraph && (
-            <GraphWrapper>
-              {additionalGraph ? additionalGraph() : 
-                <Line data={emptyChartData} options={{...emptyChartOptions, plugins: {...emptyChartOptions.plugins, title: {...emptyChartOptions.plugins.title, text: '비교 데이터'}}}} />
-              }
+          {cosmeticsData && Array.isArray(cosmeticsData) && cosmeticsData.length > 0 && (
+            <GraphWrapper style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+              <Line data={differenceChartData} options={{ ...chartOptions, indexAxis: 'y', title: { text: '차이 (cosmeticsData - spectrumData)' } }} />
             </GraphWrapper>
           )}
         </GraphContainer>

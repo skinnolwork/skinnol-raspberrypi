@@ -3,6 +3,8 @@ import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import DetailPageLayout from './DetailPageLayout';
 import Modal from './common/Modal';
 import styled from 'styled-components';
+import axios from 'axios';
+import { v4 as uuidv4 } from 'uuid';
 
 const ModalContent = styled.div`
   width: 100%;
@@ -23,50 +25,35 @@ const Input = styled.input`
 `;
 
 const CosmeticDataAdd = () => {
-  const { imageId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const { selectedImage } = location.state || {};
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [cosmeticName, setCosmeticName] = useState('');
-  const [selectedRow, setSelectedRow] = useState(null);
   const [spectrumData, setSpectrumData] = useState(null);
 
   if (!selectedImage) {
     return <div>데이터를 찾을 수 없습니다.</div>;
   }
 
-  const handleAddCosmetic = (row, spectrum) => {
-    setSelectedRow(row);
+  const handleAddCosmetic = (spectrum) => {
     setSpectrumData(spectrum);
     setIsModalOpen(true);
   };
 
-  const handleConfirm = () => {
-    const cosmeticId = Date.now(); // 간단한 ID 생성 (현재 시간)
-    
-    // 화장품 데이터 저장 요청
-    fetch('http://192.168.4.1:5000/api/cosmetics', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        id: cosmeticId,
+  const handleConfirm = async () => {
+    try {
+      await axios.post('http://192.168.12.40:5000/cosmetics', {
         name: cosmeticName,
-        spectrum: spectrumData // 선택된 row의 스펙트럼 데이터
-      }),
-    })
-    .then(response => response.json())
-    .then(data => {
-      console.log(data.message);
+        spectrum: spectrumData
+      });
+
       setIsModalOpen(false);
       setIsConfirmModalOpen(true);
-    })
-    .catch((error) => {
+    } catch (error) {
       console.error('Error:', error);
-    });
+    }
   }
 
   const handleConfirmModalClose = () => {
@@ -79,21 +66,20 @@ const CosmeticDataAdd = () => {
   return (
     <>
       <DetailPageLayout
-        title={selectedImage.name}
-        image={selectedImage}
+        title1={selectedImage.name}
         buttonText="저장하기"
         onButtonClick={handleAddCosmetic}
       />
-      <Modal 
-        isOpen={isModalOpen} 
+      <Modal
+        isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onConfirm={handleConfirm}
       >
         <ModalContent>
           화장품 이름을 입력하세요
-          <Input 
-            type="text" 
-            value={cosmeticName} 
+          <Input
+            type="text"
+            value={cosmeticName}
             onChange={(e) => setCosmeticName(e.target.value)}
             placeholder="화장품 이름"
           />
@@ -101,12 +87,12 @@ const CosmeticDataAdd = () => {
       </Modal>
 
       <Modal
-  isOpen={isConfirmModalOpen}
-  onClose={handleConfirmModalClose}
-  singleButton={true}
->
-  화장품이 성공적으로 등록되었습니다.
-</Modal>
+        isOpen={isConfirmModalOpen}
+        onClose={handleConfirmModalClose}
+        singleButton={true}
+      >
+        화장품이 성공적으로 등록되었습니다.
+      </Modal>
     </>
   );
 };
