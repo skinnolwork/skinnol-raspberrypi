@@ -16,7 +16,7 @@ const IndividualAnalysis = () => {
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const response = await axios.get('http://192.168.12.40:5000/images');
+        const response = await axios.get('http://192.168.4.1:5000/images');
         const fetchedImages = response.data.map((name) => ({
           name: name,
         }));
@@ -30,7 +30,7 @@ const IndividualAnalysis = () => {
 
     const fetchCosmetics = async () => {
       try {
-        const response = await axios.get('http://192.168.12.40:5000/cosmetics');
+        const response = await axios.get('http://192.168.4.1:5000/cosmetics');
         const fetchedCosmetics = response.data.map((name) => ({
           name: name,
         }));
@@ -68,7 +68,7 @@ const IndividualAnalysis = () => {
 
   const handleDeleteImage = async (name) => {
     try {
-      const response = await axios.delete(`http://192.168.12.40:5000/images/${name}`);
+      const response = await axios.delete(`http://192.168.4.1:5000/images/${name}`);
       if (response.status === 200) {
         setItems((prevItems) => prevItems.filter((item) => item.name !== name));
         if (selectedImage?.name === name) {
@@ -85,7 +85,7 @@ const IndividualAnalysis = () => {
 
   const handleDeleteCosmetic = async (name) => {
     try {
-      const response = await axios.delete(`http://192.168.12.40:5000/cosmetics/${name}`);
+      const response = await axios.delete(`http://192.168.4.1:5000/cosmetics/${name}`);
       if (response.status === 200) {
         setCosmetics((prevCosmetics) => prevCosmetics.filter((cosmetic) => cosmetic.name !== name));
         if (selectedCosmetic?.name === name) {

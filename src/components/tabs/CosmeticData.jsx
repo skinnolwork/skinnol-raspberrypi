@@ -13,7 +13,7 @@ const CosmeticData = () => {
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const response = await axios.get('http://192.168.12.40:5000/images');
+        const response = await axios.get('http://192.168.4.1:5000/images');
         const fetchedImages = response.data.map((name) => ({
           name: name,
         }));
@@ -26,13 +26,13 @@ const CosmeticData = () => {
   }, []);
 
   const handleImageSelect = (items) => {
-    setSelectedImage(items.id === selectedImage?.id ? null : items);
+    console.log(items)
+    setSelectedImage(items.name === selectedImage? null : items);
   };
 
   const handleAddCosmetic = () => {
     if (selectedImage) {
-      console.log(selectedImage.name)
-      navigate(`/cosmetic-data-add/${selectedImage.name}`, {
+      navigate(`/cosmetic-data-add/${selectedImage}`, {
         state: {selectedImage}
       });
     }
@@ -46,7 +46,6 @@ const CosmeticData = () => {
       화장품 등록
     </Button>
   );
-
   return (
     <TabLayout button={registerButton}>
       <SelectableList 
