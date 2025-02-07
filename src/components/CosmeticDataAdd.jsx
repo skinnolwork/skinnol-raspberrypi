@@ -4,7 +4,6 @@ import DetailPageLayout from './DetailPageLayout';
 import Modal from './common/Modal';
 import styled from 'styled-components';
 import axios from 'axios';
-import { v4 as uuidv4 } from 'uuid';
 
 const ModalContent = styled.div`
   width: 100%;
@@ -44,7 +43,7 @@ const CosmeticDataAdd = () => {
 
   const handleConfirm = async () => {
     try {
-      await axios.post('http://192.168.4.1:5000/cosmetics', {
+      await axios.post('http://192.168.12.40:5000/cosmetics', {
         name: cosmeticName,
         spectrum: spectrumData
       });

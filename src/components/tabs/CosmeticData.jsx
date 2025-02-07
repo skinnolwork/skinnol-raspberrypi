@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import Button from '../common/Button';
 import SelectableList from '../common/SelectableList';
 import TabLayout from '../TapLayout';
-import { v4 as uuidv4 } from 'uuid';
 import axios from 'axios';
 
 const CosmeticData = () => {
@@ -14,9 +13,8 @@ const CosmeticData = () => {
   useEffect(() => {
     const fetchImages = async () => {
       try {
-        const response = await axios.get('http://192.168.4.1:5000/images');
+        const response = await axios.get('http://192.168.12.40:5000/images');
         const fetchedImages = response.data.map((name) => ({
-          id: uuidv4(),
           name: name,
         }));
         setItems(fetchedImages);

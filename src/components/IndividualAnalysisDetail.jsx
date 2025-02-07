@@ -53,7 +53,7 @@ const IndividualAnalysisDetail = () => {
   const handleSaveAnalysis = () => {
     if (!analysisResult) return;
 
-    fetch('http://192.168.4.1:5000/api/save-analysis', {
+    fetch('http://192.168.12.40:5000/api/save-analysis', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

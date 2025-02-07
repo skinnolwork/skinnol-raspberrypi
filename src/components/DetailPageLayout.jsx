@@ -40,6 +40,7 @@ const Content = styled.div`
 `;
 
 const ImageContainer = styled.div`
+  position: relative;
   display: flex;
   justify-content: center;
   margin-bottom: 2rem;
@@ -70,12 +71,24 @@ const ButtonContainer = styled.div`
   padding: 1rem;
 `;
 
-const DetailPageLayout = ({ title1, title2, additionalGraph, buttonText, onButtonClick, showComparisonGraph = false, onSpectrumDataUpdate }) => {
+const GreenLine = styled.div`
+  position: absolute;
+  height: 2px;
+  background-color: green;
+  width: ${({ width }) => width}px;
+  top: ${({ position }) => position}px;
+  left: 50%;
+  transform: translateX(-50%);
+  transition: top 0.2s ease-in-out, width 0.2s ease-in-out;
+`;
+
+const DetailPageLayout = ({ title1, title2, buttonText, onButtonClick }) => {
   const navigate = useNavigate();
   const [image, setImage] = useState(null);
   const [selectedRow, setSelectedRow] = useState(null);
   const [spectrumData, setSpectrumData] = useState(null);
   const [cosmeticsData, setCosmeticsData] = useState(null);
+  const [imageWidth, setImageWidth] = useState(0);
   const imageRef = useRef(null);
   const title1_Extension = title1 + '.png';
   const title2_Extension = title2 + '.json';
@@ -83,7 +96,7 @@ const DetailPageLayout = ({ title1, title2, additionalGraph, buttonText, onButto
   useEffect(() => {
     const img = async () => {
       try {
-        const response = await axios.get(`http://192.168.4.1:5000/images/${title1_Extension}`, {
+        const response = await axios.get(`http://192.168.12.40:5000/images/${title1_Extension}`, {
           responseType: 'blob'
         });
 
@@ -99,7 +112,7 @@ const DetailPageLayout = ({ title1, title2, additionalGraph, buttonText, onButto
 
     const fetchCosmeticsData = async () => {
       try {
-        const response = await axios.get(`http://192.168.4.1:5000/cosmetics/${title2_Extension}`); // JSON 파일 가져오기
+        const response = await axios.get(`http://192.168.12.40:5000/cosmetics/${title2_Extension}`); // JSON 파일 가져오기
         setCosmeticsData(response.data); // 데이터 저장
       } catch (error) {
         console.error("title2 데이터를 불러오지 못했습니다.", error);
@@ -109,15 +122,21 @@ const DetailPageLayout = ({ title1, title2, additionalGraph, buttonText, onButto
     fetchCosmeticsData();
   }, []);
 
+  useEffect(() => {
+    if (imageRef.current) {
+      setImageWidth(imageRef.current.clientWidth); // ✅ 이미지 너비 업데이트
+    }
+  }, [image]); 
+
   const handleImageClick = async (event) => {
     if (!imageRef.current) return;
     const rect = imageRef.current.getBoundingClientRect();
+    const relativeY = event.clientY - rect.top; // 클릭한 위치 (이미지 내부 기준)
     const row = Math.floor((event.clientY - rect.top) * (2160 / rect.height));
-
-    setSelectedRow(row);
+    setSelectedRow(relativeY);
 
     try {
-      const response = await axios.post('http://192.168.4.1:5000/images/row-data', {
+      const response = await axios.post('http://192.168.12.40:5000/images/row-data', {
         filename: title1_Extension,
         row: row,
       });
@@ -234,12 +253,15 @@ const DetailPageLayout = ({ title1, title2, additionalGraph, buttonText, onButto
       <Content>
         <ImageContainer>
           {image ? (
-            <Image ref={imageRef} src={image} alt="Selected Image" onClick={handleImageClick} />
+            <>
+              <Image ref={imageRef} src={image} alt="Selected Image" onClick={handleImageClick} />
+              {selectedRow !== null && <GreenLine position={selectedRow} width={imageWidth} />}
+            </>
           ) : (
             <p>이미지를 불러오는 중...</p>
           )}
         </ImageContainer>
-        <GraphContainer style={{ justifyContent: showComparisonGraph ? 'space-between' : 'center' }}>
+        <GraphContainer style={{ justifyContent: title2 ? 'space-between' : 'center' }}>
           <GraphWrapper>
             <Line data={spectrumData ? chartData : emptyChartData} options={spectrumData ? chartOptions : emptyChartOptions} />
           </GraphWrapper>
